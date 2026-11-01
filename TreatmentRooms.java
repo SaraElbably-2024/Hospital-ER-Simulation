@@ -10,6 +10,6 @@ public class TreatmentRooms {
     }
 
     public void releaseRoom() {
-        rooms.release();
+        rooms.V();
     }
 }

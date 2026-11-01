@@ -1,33 +1,37 @@
 public class Semaphore {
-    private int permits;
+    protected int value = 0;
 
-    public Semaphore(int permits) {
-        this.permits = permits;
+    public Semaphore() {
+        value = 0;
     }
 
-    public synchronized void acquire() throws InterruptedException {
-        while (permits == 0) {
+    public Semaphore(int initial) {
+        value = initial;
+    }
+ 
+    public synchronized void P() throws InterruptedException {
+        while (value <= 0) {
             wait();
         }
-        permits--;
+        value--;
     }
-
-    
+ 
     public synchronized boolean tryAcquire(long timeoutMillis) throws InterruptedException {
         long deadline = System.currentTimeMillis() + timeoutMillis;
-        while (permits == 0) {
+        while (value <= 0) {
             long remaining = deadline - System.currentTimeMillis();
             if (remaining <= 0) {
                 return false;
             }
             wait(remaining);
         }
-        permits--;
+        value--;
         return true;
     }
 
-    public synchronized void release() {
-        permits++;
+   
+    public synchronized void V() {
+        value++;
         notifyAll();
     }
 }
