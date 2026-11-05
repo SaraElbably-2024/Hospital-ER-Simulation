@@ -1,88 +1,72 @@
 import java.util.Scanner;
 
 public class Hospital {
-    private final int capacity;
-    private final int patients;
-    private final int doctors;
-    private final TreatmentRooms treatmentRooms;
-    private final WaitingRoom waitingRoom;
 
-    public Hospital(int capacity, int doctors, int patients) {
-        this.capacity = capacity;
-        this.doctors = doctors;
-        this.patients = patients;
-        this.treatmentRooms = new TreatmentRooms(doctors);
-        this.waitingRoom = new WaitingRoom(capacity);
-    }
+    public static void simulate(int capacity, int numDoctors, int numPatients) throws InterruptedException {
+        WaitingRoom waitingRoom = new WaitingRoom(capacity);
+        TreatmentRooms treatmentRooms = new TreatmentRooms(2);
 
-    public int getCapacity() {
-        return capacity;
-    }
-
-    public int getNumDoctors() {
-        return doctors;
-    }
-
-    public int getNumPatients() {
-        return patients;
-    }
-
-    public TreatmentRooms getTreatmentRooms() {
-        return treatmentRooms;
-    }
-
-    public WaitingRoom getWaitingRoom() {
-        return waitingRoom;
-    }
-
-
-public static void simulate(int capacity, int doctors, int patients) throws InterruptedException {
-    Hospital hospital = new Hospital(capacity,doctors,patients);
-
-    Logger.log("Waiting Room Capacity: " + hospital.getCapacity());
-    Logger.log("Number of Doctors: " + hospital.getNumDoctors());
-    Logger.log("Number of Patients: " + hospital.getNumPatients());
-    Logger.log("===================================");
-
-    Thread[] patientThreads = new Thread[patients];
-            for (int i = 1; i <= patients; i++) {
-    Patient patient = new Patient(i, hospital.getWaitingRoom());
-    patientThreads[i - 1] = new Thread(patient, "Patient-" + i);
-    patientThreads[i - 1].start();
-                Thread.sleep(200);
-            }
-                    for (Thread pt : patientThreads) {
-            pt.join();
-            }
-            Logger.log("=== All Patients Processed. Simulation Finished ===");
+        // create and start the doctors
+        Doctor[] doctors = new Doctor[numDoctors];
+        for (int i = 0; i < numDoctors; i++) {
+            doctors[i] = new Doctor(i + 1, waitingRoom, treatmentRooms);
+            doctors[i].start();
         }
 
-public static void main(String[] args) throws InterruptedException {
-    Scanner in = new Scanner(System.in);
+        // create the patients
+        Patient[] patients = new Patient[numPatients];
+        StringBuilder names = new StringBuilder();
+        for (int i = 0; i < numPatients; i++) {
+            patients[i] = new Patient(i + 1, waitingRoom);
+            names.append(patients[i].getName()).append(" ");
+        }
+        Logger.log("Patients arriving:");
+        Logger.log(names.toString().trim());
 
-    int capacity = readPositive(in, "Waiting room capacity: ");
-    int doctors = readPositive(in, "Number of doctors: ");
-    int patients = readPositive(in, "Number of patients: ");
+        // patients arrive one after another
+        for (Patient p : patients) {
+            p.start();
+            Thread.sleep((long) (Math.random() * 800));
+        }
 
-    System.out.println();
-    simulate(capacity, doctors, patients);
+        // wait until every patient has been treated and has left
+        for (Patient p : patients) {
+            p.join();
+        }
 
-    in.close();
+        // stop the doctors (they are idle, waiting for a patient)
+        for (Doctor d : doctors) {
+            d.interrupt();
+        }
+        for (Doctor d : doctors) {
+            d.join();
+        }
+
+        Logger.log("All patients have been treated.");
+        Logger.log("Simulation completed.");
+    }
+
+    private static int readPositive(Scanner in, String message) {
+        while (true) {
+            System.out.print(message);
+            String line = in.nextLine().trim();
+            try {
+                int n = Integer.parseInt(line);
+                if (n > 0) {
+                    return n;
+                }
+            } catch (NumberFormatException e) {
+            }
+            System.out.println("Please enter a positive whole number.");
+        }
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+        Scanner in = new Scanner(System.in);
+        int capacity = readPositive(in, "Waiting room capacity: ");
+        int numDoctors = readPositive(in, "Number of doctors: ");
+        int numPatients = readPositive(in, "Number of patients: ");
+        System.out.println();
+        simulate(capacity, numDoctors, numPatients);
+    }
 }
-
-private static int readPositive(Scanner in, String message) {
-    int val = -1;
-    while (val <= 0) {
-        System.out.print(message);
-        if (in.hasNextInt()) {
-            val = in.nextInt();
-            if (val <= 0) {
-                System.out.println("Please enter a positive integer.");
-            }
-        } else {
-            System.out.println("Invalid input. Please enter a number.");
-            in.next();
-        }
-    }
-    return val;
-}}

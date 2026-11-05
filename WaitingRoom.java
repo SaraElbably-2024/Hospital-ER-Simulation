@@ -2,6 +2,7 @@ public class WaitingRoom {
     private final Patient[] buffer;
     private int in = 0;
     private int out = 0;
+    private int count = 0; //number of patients in waitingroom
 
     private final Semaphore empty;                 // free seats
     private final Semaphore full = new Semaphore(0);   // patients waiting
@@ -22,7 +23,11 @@ public class WaitingRoom {
         mutex.P();
         buffer[in] = p;
         in = (in + 1) % buffer.length;
-        Logger.log(p.getName() + " entered the waiting room.\n");
+        count++;
+        Logger.logWaitingRoom(
+            p.getName() + " entered the waiting room.",
+            PrintState() + "\n"
+        );
         mutex.V();
         full.V();
     }
@@ -38,8 +43,23 @@ public class WaitingRoom {
         mutex.P();
         Patient p = buffer[out];
         out = (out + 1) % buffer.length;
+        count--;
+        Logger.logWaitingRoom(
+            "Doctor took " + p.getName() + " from the waiting room.",
+            PrintState() + "\n"
+        );
         mutex.V();
         empty.V();
         return p;
+    }
+
+    private String PrintState(){
+        StringBuilder sb = new StringBuilder("Waiting room: [");
+        for (int i=0;i<count;i++) {
+            if(i>0) sb.append(", ");
+            sb.append(buffer[(out + i) % buffer.length].getName());
+        }
+        sb.append("] (").append(count).append("/").append(buffer.length).append(")");
+        return sb.toString();
     }
 }

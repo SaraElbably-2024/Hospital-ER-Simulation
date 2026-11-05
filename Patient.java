@@ -12,7 +12,7 @@ public class Patient extends Thread {
             Logger.log("\n" + getName() + " arrived.");
             waitingRoom.put(this);
             treated.P();                 // wait until the doctor finishes
-            Logger.log(getName() + " left.\n");
+            Logger.log(getName() + " left the clinic.\n");
         } catch (InterruptedException e) {
         }
     }
