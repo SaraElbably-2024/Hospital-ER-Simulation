@@ -9,10 +9,10 @@ public class Patient extends Thread {
 
     public void run() {
         try {
-            Logger.log(getName() + " arrived.");
+            Logger.log("\n" + getName() + " arrived.");
             waitingRoom.put(this);
             treated.P();                 // wait until the doctor finishes
-            Logger.log(getName() + " left.");
+            Logger.log(getName() + " left.\n");
         } catch (InterruptedException e) {
         }
     }
