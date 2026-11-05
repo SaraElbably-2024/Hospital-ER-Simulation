@@ -22,7 +22,7 @@ public class WaitingRoom {
         mutex.P();
         buffer[in] = p;
         in = (in + 1) % buffer.length;
-        Logger.log(p.getName() + " entered the waiting room.");
+        Logger.log(p.getName() + " entered the waiting room.\n");
         mutex.V();
         full.V();
     }

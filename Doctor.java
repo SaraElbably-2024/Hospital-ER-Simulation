@@ -20,13 +20,14 @@ public class Doctor extends Thread {
                     Logger.log(getName() + " begins treating " + p.getName() + ".");
                     Thread.sleep(2000 + (long) (Math.random() * 3000));
                     Logger.log(getName() + " finished treating " + p.getName() + ".");
-                    Logger.log(getName() + " released the treatment room.");
                     treatmentRooms.releaseRoom();
+                    Logger.log(getName() + " released the treatment room.");
                     Logger.log(getName() + " is now available.");
                     p.finishTreatment();
                 } else {
                     Logger.log(getName() + " could not acquire a treatment room.");
                     Logger.log(getName() + " is sending " + p.getName() + " back to the waiting room.");
+                    Logger.log(" So " + getName() + " is now available.");
                     waitingRoom.putBack(p);
                 }
             }
