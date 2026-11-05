@@ -34,4 +34,8 @@ public class Semaphore {
         value++;
         notifyAll();
     }
+
+    public synchronized int getValue() {
+        return value;
+    }
 }

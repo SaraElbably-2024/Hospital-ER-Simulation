@@ -1,5 +1,6 @@
 public class WaitingRoom {
     private final Patient[] buffer;
+    private final int capacity;
     private int in = 0;
     private int out = 0;
 
@@ -8,6 +9,7 @@ public class WaitingRoom {
     private final Semaphore mutex = new Semaphore(1);  // protects the buffer
 
     public WaitingRoom(int capacity) {
+        this.capacity = capacity;
         buffer = new Patient[capacity];
         empty = new Semaphore(capacity);
     }
@@ -29,7 +31,19 @@ public class WaitingRoom {
 
     // Doctor sends a patient back (same as entering the waiting room)
     public void putBack(Patient p) throws InterruptedException {
-        put(p);
+        if (empty.getValue() <= 0) {
+            Logger.log("The waiting room is full.");
+            Logger.log(p.getName() + " is waiting outside for an available seat.");
+        }
+
+        empty.P();
+        mutex.P();
+
+        buffer[in] = p;
+        in = (in + 1) % capacity;
+
+        mutex.V();
+        full.V();
     }
 
     // Doctor takes a patient (waits while the waiting room is empty)
